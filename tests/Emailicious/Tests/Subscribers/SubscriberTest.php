@@ -14,7 +14,7 @@ use Emailicious\Tests\EmailiciousTest;
 
 class TestSubscriber extends Subscriber {
 	public static function createInstance(Client $client, $listId, $data) {
-		return new static($client, $listId, $data);
+		return new TestSubscriber($client, $listId, $data);
 	}
 }
 

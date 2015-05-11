@@ -13,13 +13,13 @@ class SubscriberList extends Model {
 	public static function all(Client $client) {
 		$response = $client->get(self::getListRessource());
 		return new ResultsIterator($client, $response, function($result) use ($client) {
-			return new static($client, $result);
+			return new SubscriberList($client, $result);
 		});
 	}
 
 	public static function get(Client $client, $id) {
 		$data = $client->get(self::getInstanceRessource($id));
-		return new static($client, $data);
+		return new SubscriberList($client, $data);
 	}
 
 	private function __construct(Client $client, $data) {

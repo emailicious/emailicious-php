@@ -20,7 +20,7 @@ class Subscriber extends Model {
 		$parameters = array('subscription' => $status) ? $status : NULL;
 		$response = $client->get(self::getListRessource($listId), $parameters);
 		return new ResultsIterator($client, $response, function($result) use ($client, $listId) {
-			return new static($client, $listId, $result);
+			return new Subscriber($client, $listId, $result);
 		});
 	}
 
@@ -33,13 +33,13 @@ class Subscriber extends Model {
 			}
 			throw $exception;
 		}
-		return new static($client, $listId, $data);
+		return new Subscriber($client, $listId, $data);
 	}
 
 	public static function getByEmail($client, $listId, $email) {
 		$data = $client->get(self::getListRessource($listId), array('email' => $email));
 		if ($data['count'] == 1) {
-			return new static($client, $listId, $data['results'][0]);
+			return new Subscriber($client, $listId, $data['results'][0]);
 		}
 		throw new SubscriberNotFound($listId, 'email', $email);
 	}
@@ -50,12 +50,12 @@ class Subscriber extends Model {
 		} catch (ClientErrorResponseException $exception) {
 			$response = $exception->getResponse();
 			if ($exception->getResponse()->getStatusCode() == 409) {
-				$conflictualSubscriber = new static($client, $listId, $response->json());
+				$conflictualSubscriber = new Subscriber($client, $listId, $response->json());
 				throw new SubscriberConflict($listId, $creationData, $conflictualSubscriber);
 			}
 			throw $exception;
 		}
-		return new static($client, $listId, $data);
+		return new Subscriber($client, $listId, $data);
 	}
 
 	protected function __construct(Client $client, $listId, $data) {
