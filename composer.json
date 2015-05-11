@@ -1,0 +1,23 @@
+{
+    "name": "emailicious/emailicious",
+    "description": "",
+    "keywords": ["emailicious", "api", "client"],
+    "homepage": "https://github.com/emailicious/emailicious-php",
+    "type": "library",
+    "license": "MIT",
+    "authors": [{
+        "name": "Simon Charette",
+        "email": "simon.charette@emailicous.com"
+    }],
+    "require": {
+        "php": ">=5.3",
+        "guzzlehttp/guzzle": "~3.8.1",
+    },
+    "require-dev": {
+        "mockery/mockery": "~0.9",
+        "phpunit/phpunit": "~4.4"
+    },
+    "autoload": {
+        "psr-0": { "Emailicious": "src/" }
+    }
+}
