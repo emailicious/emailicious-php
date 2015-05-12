@@ -19,8 +19,9 @@ class Subscriber extends Model {
 	public static function all($client, $listId, $status = NULL) {
 		$parameters = array('subscription' => $status) ? $status : NULL;
 		$response = $client->get(self::getListRessource($listId), $parameters);
-		return new ResultsIterator($client, $response, function($result) use ($client, $listId) {
-			return new Subscriber($client, $listId, $result);
+		$class = __CLASS__;
+		return new ResultsIterator($client, $response, function($result) use ($class, $client, $listId) {
+			return new $class($client, $listId, $result);
 		});
 	}
 
@@ -33,13 +34,13 @@ class Subscriber extends Model {
 			}
 			throw $exception;
 		}
-		return new Subscriber($client, $listId, $data);
+		return new static($client, $listId, $data);
 	}
 
 	public static function getByEmail($client, $listId, $email) {
 		$data = $client->get(self::getListRessource($listId), array('email' => $email));
 		if ($data['count'] == 1) {
-			return new Subscriber($client, $listId, $data['results'][0]);
+			return new static($client, $listId, $data['results'][0]);
 		}
 		throw new SubscriberNotFound($listId, 'email', $email);
 	}
@@ -50,15 +51,18 @@ class Subscriber extends Model {
 		} catch (ClientErrorResponseException $exception) {
 			$response = $exception->getResponse();
 			if ($exception->getResponse()->getStatusCode() == 409) {
-				$conflictualSubscriber = new Subscriber($client, $listId, $response->json());
+				$conflictualSubscriber = new static($client, $listId, $response->json());
 				throw new SubscriberConflict($listId, $creationData, $conflictualSubscriber);
 			}
 			throw $exception;
 		}
-		return new Subscriber($client, $listId, $data);
+		return new static($client, $listId, $data);
 	}
 
-	protected function __construct(Client $client, $listId, $data) {
+	/*
+	 * TODO: Change visibility when support for PHP 5.3 is dropped.
+	 */
+	public function __construct(Client $client, $listId, $data) {
 		$this->_listId = $listId;
 		$this->setClient($client);
 		$this->setData($data);

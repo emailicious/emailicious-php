@@ -12,8 +12,9 @@ class SubscriberList extends Model {
 
 	public static function all(Client $client) {
 		$response = $client->get(self::getListRessource());
-		return new ResultsIterator($client, $response, function($result) use ($client) {
-			return new SubscriberList($client, $result);
+		$class = __CLASS__;
+		return new ResultsIterator($client, $response, function($result) use ($class, $client) {
+			return new $class($client, $result);
 		});
 	}
 
@@ -22,7 +23,10 @@ class SubscriberList extends Model {
 		return new SubscriberList($client, $data);
 	}
 
-	private function __construct(Client $client, $data) {
+	/*
+	 * TODO: Change visibility when support for PHP 5.3 is dropped.
+	 */
+	public function __construct(Client $client, $data) {
 		$this->setClient($client);
 		$this->setData($data);
 	}
