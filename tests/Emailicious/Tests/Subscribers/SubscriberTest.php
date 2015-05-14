@@ -117,6 +117,8 @@ class SubscriberTest extends EmailiciousTest {
 			'count' => 0,
 			'results' => array()
 		));
+		$this->client->shouldReceive('getLatestRequest')->once()->andReturn(new Request('GET', $ressource));
+		$this->client->shouldReceive('getLatestResponse')->once()->andReturn(new Response(200));
 		try {
 			Subscriber::getByEmail($this->client, $this->listId, $email);
 			$this->fail('SubscriberNotFound not thrown.');

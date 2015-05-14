@@ -30,7 +30,7 @@ class Subscriber extends Model {
 			$data = $client->get(self::getInstanceRessource($listId, $id));
 		} catch (ClientErrorResponseException $exception) {
 			if ($exception->getResponse()->getStatusCode() == 404) {
-				throw new SubscriberNotFound($listId, 'id', $id);
+				throw SubscriberNotFound::fromException($exception, $listId, 'id', $id);
 			}
 			throw $exception;
 		}
@@ -42,7 +42,10 @@ class Subscriber extends Model {
 		if ($data['count'] == 1) {
 			return new static($client, $listId, $data['results'][0]);
 		}
-		throw new SubscriberNotFound($listId, 'email', $email);
+		$exception = new SubscriberNotFound($listId, 'email', $email);
+		$exception->setRequest($client->getLatestRequest());
+		$exception->setResponse($client->getLatestResponse());
+		throw $exception;
 	}
 
 	public static function create($client, $listId, $creationData) {
@@ -52,7 +55,7 @@ class Subscriber extends Model {
 			$response = $exception->getResponse();
 			if ($exception->getResponse()->getStatusCode() == 409) {
 				$conflictualSubscriber = new static($client, $listId, $response->json());
-				throw new SubscriberConflict($listId, $creationData, $conflictualSubscriber);
+				throw SubscriberConflict::fromException($exception, $listId, $creationData, $conflictualSubscriber);
 			}
 			throw $exception;
 		}
