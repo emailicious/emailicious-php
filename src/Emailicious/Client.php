@@ -13,6 +13,8 @@ class Client {
 	const USER_AGENT_FORMAT = 'emailicious/%s;php';
 
 	protected $_client;
+	private $_latestRequest;
+	private $_latestResponse;
 
 	public function __construct($account, $username, $password) {
 		$this->_client = new GuzzleClient(self::BASE_URL, array(
@@ -27,9 +29,19 @@ class Client {
 		return $this->_client->getBaseUrl();
 	}
 
+	public function getLatestRequest() {
+		return $this->_latestRequest;
+	}
+
+	public function getLatestResponse() {
+		return $this->_latestResponse;
+	}
+
 	protected function _sendRequest(Request $request) {
 		$request->setHeader('Accept', 'application/json');
+		$this->_latestRequest = $request;
 		$response = $request->send();
+		$this->_latestResponse = $response;
 		return $response;
 	}
 
