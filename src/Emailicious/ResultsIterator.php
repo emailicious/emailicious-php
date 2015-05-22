@@ -10,7 +10,7 @@ class ResultsIterator implements \Iterator {
 	private $_results;
 	private $_constructResult;
 
-	public function __construct(Client $client, $response, $constructResult = NULL) {
+	public function __construct(Client $client, $response, $constructResult = null) {
 		$this->_client = $client;
 		$this->_baseUrlLen = strlen($client->getBaseUrl());
 		$this->_setNext($response);
@@ -22,7 +22,7 @@ class ResultsIterator implements \Iterator {
 	private function _setNext($response) {
 		$next = $response['next'];
 		if (is_null($next)) {
-			$this->_next = NULL;
+			$this->_next = null;
 		} else {
 			$this->_next = substr($next, $this->_baseUrlLen + 1);
 		}

@@ -46,7 +46,7 @@ abstract class Model {
 		$this->_data[$name] = $value;
 	}
 
-	public function update(array $only = NULL) {
+	public function update(array $only = null) {
 		if ($only) {
 			$data = array();
 			foreach ($only as $key) {

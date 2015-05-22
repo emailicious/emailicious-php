@@ -37,7 +37,7 @@ class SubscriberTest extends EmailiciousTest {
 		$ressource = Subscriber::getListRessource($this->listId);
 		$status = 'active';
 		$this->client->shouldReceive('get')->once()->with($ressource, array('subscription' => $status))->andReturn(array(
-			'next' => NULL,
+			'next' => null,
 			'results'=> array(
 				array('id' => 0),
 				array('id' => 1),
@@ -176,7 +176,7 @@ class SubscriberTest extends EmailiciousTest {
 
 	public function testActivate() {
 		$subscriber = TestSubscriber::createInstance($this->client, $this->listId, array('id' => 1));
-		$this->client->shouldReceive('post')->once()->with($subscriber->getActivationRessource(), NULL)->andReturn(array(
+		$this->client->shouldReceive('post')->once()->with($subscriber->getActivationRessource(), null)->andReturn(array(
 			'status' => 'active'
 		));
 		$subscriber->activate();

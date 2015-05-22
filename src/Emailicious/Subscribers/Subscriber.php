@@ -16,7 +16,7 @@ class Subscriber extends Model {
 
 	private $_listId;
 
-	public static function all($client, $listId, $status = NULL) {
+	public static function all($client, $listId, $status = null) {
 		$parameters = $status ? array('subscription' => $status) : null;
 		$response = $client->get(self::getListRessource($listId), $parameters);
 		$class = __CLASS__;
@@ -84,8 +84,8 @@ class Subscriber extends Model {
 		return "$ressource/activate";
 	}
 
-	public function activate($confirm = NULL) {
-		$data = $confirm ? array('confirm' => 1) : NULL;
+	public function activate($confirm = null) {
+		$data = $confirm ? array('confirm' => 1) : null;
 		$data = $this->getClient()->post($this->getActivationRessource(), $data);
 		$this->subscription = $data['status'];
 	}

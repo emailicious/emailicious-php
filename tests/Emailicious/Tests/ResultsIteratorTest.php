@@ -9,7 +9,7 @@ class ResultsIteratorTest extends EmailiciousTest {
 	public function testIteration() {
 		$this->client->shouldReceive('get')->with('results?page=2')->once()->andReturn(array(
 			'results' => array('3', '4', '5'),
-			'next' => NULL,
+			'next' => null,
 		));
 		$response = array(
 			'next' => 'https://foo.emailicious.com/api/v1/results?page=2',
@@ -26,7 +26,7 @@ class ResultsIteratorTest extends EmailiciousTest {
 	}
 
 	public function testDefaultInstanceConstruction() {
-		$response = array('next' => NULL, 'results' => array(0, 1, 2));
+		$response = array('next' => null, 'results' => array(0, 1, 2));
 		$iterator = new ResultsIterator($this->client, $response);
 		$expected = array(0, 1, 2);
 		foreach ($iterator as $key => $value) {

@@ -9,7 +9,7 @@ use Emailicious\Tests\EmailiciousTest;
 class SubscriberListTest extends EmailiciousTest {
 	public function testAll() {
 		$this->client->shouldReceive('get')->once()->with(SubscriberList::getListRessource())->andReturn(array(
-			'next' => NULL,
+			'next' => null,
 			'results'=> array(
 				array('id' => 0),
 				array('id' => 1),
