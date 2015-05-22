@@ -43,7 +43,7 @@ class QueryAggregatorTest extends EmailiciousTest {
 
 	public function testTwoDepthNestedArray() {
 		$this->assertEquals(
-			array('array%5B0%5D.foo.bar' => array(1, 2, 3)),
+			array('array%5B0%5Dfoo.bar' => array(1, 2, 3)),
 			$this->aggregator->aggregate('array', array(array('foo' => array('bar' => array(1, 2, 3)))), $this->query)
 		);
 	}

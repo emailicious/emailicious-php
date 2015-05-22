@@ -7,6 +7,7 @@ use Guzzle\Http\QueryString;
 
 class QueryAggregator extends DuplicateAggregator {
 	const ARRAY_KEY_FORMAT = "%s[%d]";
+	const ASSOC_FIRST_KEY_FORMAT = "%s%s";
 	const ASSOC_KEY_FORMAT = "%s.%s";
 
 	private static function _containsArray(array $array) {
@@ -26,7 +27,9 @@ class QueryAggregator extends DuplicateAggregator {
 		$containsArray = self::_containsArray($value);
 		$isAssocArray = self::_isAssocArray($value);
 		if ($containsArray || $isAssocArray) {
-			$nestedKeyFormat = $isAssocArray ? self::ASSOC_KEY_FORMAT : self::ARRAY_KEY_FORMAT;
+			$nestedKeyFormat = $isAssocArray ? (
+				substr($key, -1) ==  ']' ? self::ASSOC_FIRST_KEY_FORMAT : self::ASSOC_KEY_FORMAT
+			) : self::ARRAY_KEY_FORMAT;
 			$return = array();
 			foreach ($value as $k => $v) {
 				$nestedKey = sprintf($nestedKeyFormat, $key, $k);
