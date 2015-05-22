@@ -36,7 +36,7 @@ class SubscriberTest extends EmailiciousTest {
 	public function testAll() {
 		$ressource = Subscriber::getListRessource($this->listId);
 		$status = 'active';
-		$this->client->shouldReceive('get')->once()->with($ressource, $status)->andReturn(array(
+		$this->client->shouldReceive('get')->once()->with($ressource, array('subscription' => $status))->andReturn(array(
 			'next' => NULL,
 			'results'=> array(
 				array('id' => 0),

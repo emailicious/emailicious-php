@@ -4,7 +4,9 @@ namespace Emailicious;
 
 use Guzzle\Http\Client as GuzzleClient;
 use Guzzle\Http\Exception\BadResponseException;
+use Guzzle\Http\Message\EntityEnclosingRequestInterface;
 use Guzzle\Http\Message\Request;
+use Guzzle\Http\QueryAggregator\DuplicateAggregator;
 
 class Client {
 	const BASE_URL = 'https://{account}.emailicious.com/api/{version}';
@@ -13,6 +15,7 @@ class Client {
 	const USER_AGENT_FORMAT = 'emailicious/%s;php';
 
 	protected $_client;
+	private $_aggregator;
 	private $_latestRequest;
 	private $_latestResponse;
 
@@ -23,6 +26,7 @@ class Client {
 		));
 		$this->_client->setUserAgent(sprintf(self::USER_AGENT_FORMAT, self::VERSION));
 		$this->_client->setDefaultOption('auth', array($username, $password, 'Basic'));
+		$this->_aggregator = new DuplicateAggregator;
 	}
 
 	public function getBaseUrl() {
@@ -37,38 +41,41 @@ class Client {
 		return $this->_latestResponse;
 	}
 
-	protected function _sendRequest(Request $request) {
+	protected function _sendRequest(Request $request, array $parameters = null) {
 		$request->setHeader('Accept', 'application/json');
+		if (is_array($parameters)) {
+			$query = $request->getQuery();
+			$query->setAggregator($this->_aggregator);
+			foreach ($parameters as $key => $value) {
+				$query->set($key, $value);
+			}
+		}
+		if ($request instanceof EntityEnclosingRequestInterface) {
+			$request->getPostFields()->setAggregator($this->_aggregator);
+		}
 		$this->_latestRequest = $request;
 		$response = $request->send();
 		$this->_latestResponse = $response;
 		return $response;
 	}
 
-	private function _buildRessource($ressource, $parameters) {
-		if (is_array($parameters)) {
-			$ressource .= '?' . http_build_query($parameters);
-		}
-		return $ressource;
+	public function get($ressource, array $parameters = null) {
+		$request = $this->_client->get($ressource);
+		return $this->_sendRequest($request, $parameters)->json();
 	}
 
-	public function get($ressource, $parameters = NULL) {
-		$request = $this->_client->get($this->_buildRessource($ressource, $parameters));
-		return $this->_sendRequest($request)->json();
+	public function post($ressource, array $data = null, array $parameters = null) {
+		$request = $this->_client->post($ressource, null, $data);
+		return $this->_sendRequest($request, $parameters)->json();
 	}
 
-	public function post($ressource, $data = NULL, $parameters = NULL) {
-		$request = $this->_client->post($this->_buildRessource($ressource, $parameters), NULL, $data);
-		return $this->_sendRequest($request)->json();
+	public function put($ressource, array $data = null, array $parameters = null) {
+		$request = $this->_client->put($ressource, null, $data);
+		return $this->_sendRequest($request, $parameters)->json();
 	}
 
-	public function put($ressource, $data = NULL, $parameters = NULL) {
-		$request = $this->_client->put($this->_buildRessource($ressource, $parameters), NULL, $data);
-		return $this->_sendRequest($request)->json();
-	}
-
-	public function patch($ressource, $data = NULL, $parameters = NULL) {
-		$request = $this->_client->patch($this->_buildRessource($ressource, $parameters), NULL, $data);
-		return $this->_sendRequest($request)->json();
+	public function patch($ressource, array $data = null, array $parameters = null) {
+		$request = $this->_client->patch($ressource, null, $data);
+		return $this->_sendRequest($request, $parameters)->json();
 	}
 }

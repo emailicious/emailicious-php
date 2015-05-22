@@ -19,8 +19,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$client = new TestClient('foo', 'bar', 'baz');
 		$guzzle = $client->getGuzzleClient();
 		$mock = new MockPlugin();
-		$this->parameters = array('bar' => 'baz');
-		$this->data = array('foo' => 'bar');
+		$this->parameters = array('bar' => 'baz', 'meh' => array(1, 2, 3));
+		$this->data = array('foo' => 'bar', 'mah' => array('foo', 'bob', 'test'));
 		$this->response = new Response(200, array('Content-Type' => 'application/json'), json_encode($this->data));
 		$mock->addResponse($this->response);
 		$guzzle->addSubscriber($mock);
@@ -35,7 +35,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals($request->getPassword(), 'baz');
 		$this->assertEquals((string) $request->getHeader('Accept'), 'application/json');
 		$this->assertEquals($request->getPath(), '/api/v1/ressource');
-		$this->assertEquals($request->getQuery()->toArray(), $this->parameters);
+		$this->assertEquals($request->getQuery(true), 'bar=baz&meh=1&meh=2&meh=3');
 	}
 
 	public function testGetLatestResponse() {
@@ -56,7 +56,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$this->_testRequestDefaults($request);
 		$this->assertEquals($request->getMethod(), 'POST');
 		$this->assertEquals((string) $request->getHeader('Content-Type'), 'application/x-www-form-urlencoded; charset=utf-8');
-		$this->assertEquals($request->getPostFields()->toArray(), $this->data);
+		$this->assertEquals((string) $request->getPostFields(), 'foo=bar&mah=foo&mah=bob&mah=test');
 	}
 
 	public function testPut() {
@@ -65,7 +65,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$this->_testRequestDefaults($request);
 		$this->assertEquals($request->getMethod(), 'PUT');
 		$this->assertEquals((string) $request->getHeader('Content-Type'), 'application/x-www-form-urlencoded; charset=utf-8');
-		$this->assertEquals($request->getPostFields()->toArray(), $this->data);
+		$this->assertEquals((string) $request->getPostFields(), 'foo=bar&mah=foo&mah=bob&mah=test');
 	}
 
 	public function testPatch() {
@@ -74,6 +74,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$this->_testRequestDefaults($request);
 		$this->assertEquals($request->getMethod(), 'PATCH');
 		$this->assertEquals((string) $request->getHeader('Content-Type'), 'application/x-www-form-urlencoded; charset=utf-8');
-		$this->assertEquals($request->getPostFields()->toArray(), $this->data);
+		$this->assertEquals((string) $request->getPostFields(), 'foo=bar&mah=foo&mah=bob&mah=test');
 	}
 }

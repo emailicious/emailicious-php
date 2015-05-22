@@ -17,7 +17,7 @@ class Subscriber extends Model {
 	private $_listId;
 
 	public static function all($client, $listId, $status = NULL) {
-		$parameters = array('subscription' => $status) ? $status : NULL;
+		$parameters = $status ? array('subscription' => $status) : null;
 		$response = $client->get(self::getListRessource($listId), $parameters);
 		$class = __CLASS__;
 		return new ResultsIterator($client, $response, function($result) use ($class, $client, $listId) {
