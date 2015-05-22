@@ -21,6 +21,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$mock = new MockPlugin();
 		$this->parameters = array('bar' => 'baz', 'meh' => array(1, 2, 3));
 		$this->data = array('foo' => 'bar', 'mah' => array('foo', 'bob', 'test'));
+		$this->files = array('file' => __FILE__);
 		$this->response = new Response(200, array('Content-Type' => 'application/json'), json_encode($this->data));
 		$mock->addResponse($this->response);
 		$guzzle->addSubscriber($mock);
@@ -51,7 +52,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testPost() {
-		$this->assertEquals($this->client->post('ressource', $this->data, $this->parameters), $this->data);
+		$this->assertEquals($this->client->post('ressource', $this->data, null, $this->parameters), $this->data);
 		$request = $this->client->getLatestRequest();
 		$this->_testRequestDefaults($request);
 		$this->assertEquals($request->getMethod(), 'POST');
@@ -59,8 +60,20 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals((string) $request->getPostFields(), 'foo=bar&mah=foo&mah=bob&mah=test');
 	}
 
+	public function testPostFile() {
+		$this->assertEquals($this->client->post('ressource', null, $this->files), $this->data);
+		$request = $this->client->getLatestRequest();
+		$this->assertEquals($request->getMethod(), 'POST');
+		$this->assertEquals((string) $request->getHeader('Content-Type'), 'multipart/form-data');
+		foreach ($request->getPostFiles() as $fieldname => $files) {
+			foreach ($files as $file) {
+				$this->assertEquals($this->files[$fieldname], $file->getFileName());
+			}
+		}
+	}
+
 	public function testPut() {
-		$this->assertEquals($this->client->put('ressource', $this->data, $this->parameters), $this->data);
+		$this->assertEquals($this->client->put('ressource', $this->data, null, $this->parameters), $this->data);
 		$request = $this->client->getLatestRequest();
 		$this->_testRequestDefaults($request);
 		$this->assertEquals($request->getMethod(), 'PUT');
@@ -68,12 +81,36 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals((string) $request->getPostFields(), 'foo=bar&mah=foo&mah=bob&mah=test');
 	}
 
+	public function testPutFile() {
+		$this->assertEquals($this->client->put('ressource', null, $this->files), $this->data);
+		$request = $this->client->getLatestRequest();
+		$this->assertEquals($request->getMethod(), 'PUT');
+		$this->assertEquals((string) $request->getHeader('Content-Type'), 'multipart/form-data');
+		foreach ($request->getPostFiles() as $fieldname => $files) {
+			foreach ($files as $file) {
+				$this->assertEquals($this->files[$fieldname], $file->getFileName());
+			}
+		}
+	}
+
 	public function testPatch() {
-		$this->assertEquals($this->client->patch('ressource', $this->data, $this->parameters), $this->data);
+		$this->assertEquals($this->client->patch('ressource', $this->data, null, $this->parameters), $this->data);
 		$request = $this->client->getLatestRequest();
 		$this->_testRequestDefaults($request);
 		$this->assertEquals($request->getMethod(), 'PATCH');
 		$this->assertEquals((string) $request->getHeader('Content-Type'), 'application/x-www-form-urlencoded; charset=utf-8');
 		$this->assertEquals((string) $request->getPostFields(), 'foo=bar&mah=foo&mah=bob&mah=test');
+	}
+
+	public function testPatchFile() {
+		$this->assertEquals($this->client->patch('ressource', null, $this->files), $this->data);
+		$request = $this->client->getLatestRequest();
+		$this->assertEquals($request->getMethod(), 'PATCH');
+		$this->assertEquals((string) $request->getHeader('Content-Type'), 'multipart/form-data');
+		foreach ($request->getPostFiles() as $fieldname => $files) {
+			foreach ($files as $file) {
+				$this->assertEquals($this->files[$fieldname], $file->getFileName());
+			}
+		}
 	}
 }

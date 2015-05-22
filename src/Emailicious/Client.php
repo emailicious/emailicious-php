@@ -4,7 +4,7 @@ namespace Emailicious;
 
 use Guzzle\Http\Client as GuzzleClient;
 use Guzzle\Http\Exception\BadResponseException;
-use Guzzle\Http\Message\EntityEnclosingRequestInterface;
+use Guzzle\Http\Message\EntityEnclosingRequest;
 use Guzzle\Http\Message\Request;
 use Emailicious\Http\QueryAggregator;
 
@@ -50,13 +50,16 @@ class Client {
 				$query->set($key, $value);
 			}
 		}
-		if ($request instanceof EntityEnclosingRequestInterface) {
-			$request->getPostFields()->setAggregator($this->_aggregator);
-		}
 		$this->_latestRequest = $request;
 		$response = $request->send();
 		$this->_latestResponse = $response;
 		return $response;
+	}
+
+	protected function _sendEntityEnclosingRequest(EntityEnclosingRequest $request, array $files = null, array $parameters = null) {
+		$request->getPostFields()->setAggregator($this->_aggregator);
+		if ($files) $request->addPostFiles($files);
+		return $this->_sendRequest($request, $parameters);
 	}
 
 	public function get($ressource, array $parameters = null) {
@@ -64,18 +67,18 @@ class Client {
 		return $this->_sendRequest($request, $parameters)->json();
 	}
 
-	public function post($ressource, array $data = null, array $parameters = null) {
-		$request = $this->_client->post($ressource, null, $data);
-		return $this->_sendRequest($request, $parameters)->json();
+	public function post($ressource, array $fields = null, array $files = null, array $parameters = null) {
+		$request = $this->_client->post($ressource, null, $fields);
+		return $this->_sendEntityEnclosingRequest($request, $files, $parameters)->json();
 	}
 
-	public function put($ressource, array $data = null, array $parameters = null) {
-		$request = $this->_client->put($ressource, null, $data);
-		return $this->_sendRequest($request, $parameters)->json();
+	public function put($ressource, array $fields = null, array $files = null, array $parameters = null) {
+		$request = $this->_client->put($ressource, null, $fields);
+		return $this->_sendEntityEnclosingRequest($request, $files, $parameters)->json();
 	}
 
-	public function patch($ressource, array $data = null, array $parameters = null) {
-		$request = $this->_client->patch($ressource, null, $data);
-		return $this->_sendRequest($request, $parameters)->json();
+	public function patch($ressource, array $fields = null, array $files = null, array $parameters = null) {
+		$request = $this->_client->patch($ressource, null, $fields);
+		return $this->_sendEntityEnclosingRequest($request, $files, $parameters)->json();
 	}
 }
