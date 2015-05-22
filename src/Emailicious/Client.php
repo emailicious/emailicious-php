@@ -6,7 +6,7 @@ use Guzzle\Http\Client as GuzzleClient;
 use Guzzle\Http\Exception\BadResponseException;
 use Guzzle\Http\Message\EntityEnclosingRequestInterface;
 use Guzzle\Http\Message\Request;
-use Guzzle\Http\QueryAggregator\DuplicateAggregator;
+use Emailicious\Http\QueryAggregator;
 
 class Client {
 	const BASE_URL = 'https://{account}.emailicious.com/api/{version}';
@@ -26,7 +26,7 @@ class Client {
 		));
 		$this->_client->setUserAgent(sprintf(self::USER_AGENT_FORMAT, self::VERSION));
 		$this->_client->setDefaultOption('auth', array($username, $password, 'Basic'));
-		$this->_aggregator = new DuplicateAggregator;
+		$this->_aggregator = new QueryAggregator;
 	}
 
 	public function getBaseUrl() {
