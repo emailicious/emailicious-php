@@ -5,6 +5,7 @@ namespace Emailicious;
 use Guzzle\Http\Client as GuzzleClient;
 use Guzzle\Http\Exception\BadResponseException;
 use Guzzle\Http\Message\EntityEnclosingRequest;
+use Guzzle\Http\Message\PostFile;
 use Guzzle\Http\Message\Request;
 use Guzzle\Http\QueryString;
 use Emailicious\Http\QueryAggregator;
@@ -57,29 +58,26 @@ class Client {
 		return $response;
 	}
 
-	private function _createMulipartField($boundary, $key, $value) {
+	private function _createMulipartField($boundary, $name, $value) {
 		return implode("\r\n", array(
 			"--$boundary",
-			"Content-Disposition: form-data; name=\"$key\"",
+			"Content-Disposition: form-data; name=\"$name\"",
 			'',
 			$value,
 		));
 	}
 
-	private function _createMulipartFile($boundary, $key, $file) {
-		if ($file instanceof \CURLFile) {
-			$filePath = $file->getFilename();
-			$fileName = $file->getPostFilename();
-			$contentType = $file->getMimeType();
-		} else {
-			$filePath = $file;
-			$fileName = basename($file);
-			$contentType = 'application/octet-stream';
+	private function _createMulipartFile($boundary, $fieldName, $file) {
+		if (!($file instanceof PostFile)) {
+			$file = new PostFile($fieldName, $file);
 		}
-		$content = file_get_contents($filePath);
+		$postName = $file->getPostname();
+		$contentType = $file->getContentType();
+		if (is_null($contentType)) $contentType = $file->guessContentType();
+		$content = file_get_contents($file->getFilename());
 		return implode("\r\n", array(
 			"--$boundary",
-			"Content-Disposition: form-data; name=\"$key\"; filename=\"$fileName\"",
+			"Content-Disposition: form-data; name=\"$fieldName\"; filename=\"$postName\"",
 			"Content-Type: $contentType",
 			'',
 			$content,
@@ -88,17 +86,17 @@ class Client {
 
 	private function _createMultipartBody($boundary, QueryString $fields, $files) {
 		$body = array();
-		foreach ($fields->useUrlEncoding(false)->urlEncode() as $key => $value) {
+		foreach ($fields->useUrlEncoding(false)->urlEncode() as $name => $value) {
 			if (is_array($value)) {
 				foreach ($value as $v) {
-					$body[] = $this->_createMulipartField($boundary, $key, $v);
+					$body[] = $this->_createMulipartField($boundary, $name, $v);
 				}
 			} else {
-				$body[] = $this->_createMulipartField($boundary, $key, $value);
+				$body[] = $this->_createMulipartField($boundary, $name, $value);
 			}
 		}
-		foreach ($files as $key => $filename) {
-			$body[] = $this->_createMulipartFile($boundary, $key, $filename);
+		foreach ($files as $name => $file) {
+			$body[] = $this->_createMulipartFile($boundary, $name, $file);
 		}
 		if (count($body)) $body[] = "--$boundary--\r\n";
 		return implode("\r\n", $body);

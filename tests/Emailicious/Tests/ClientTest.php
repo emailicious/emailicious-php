@@ -4,6 +4,7 @@ namespace Emailicious\Tests;
 
 use Emailicious\Client;
 use Guzzle\Http\Message\Request;
+use Guzzle\Http\Message\PostFile;
 use Guzzle\Http\Message\Response;
 use Guzzle\Plugin\Mock\MockPlugin;
 use Guzzle\Http\QueryString;
@@ -22,7 +23,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 		$mock = new MockPlugin();
 		$this->parameters = array('bar' => 'baz', 'meh' => array(1, 2, 3));
 		$this->data = array('foo' => 'bar', 'mah' => array('foo', 'bob', 'test'));
-		$this->files = array('file' => __FILE__, 'curlFile' => new \CURLFile(__FILE__, 'application/php', 'file.php'));
+		$this->files = array(
+			'file' => __FILE__,
+			'postFile' => new PostFile('postFile', __FILE__, 'application/php', 'file.php'),
+		);
 		$this->response = new Response(200, array('Content-Type' => 'application/json'), json_encode($this->data));
 		$mock->addResponse($this->response);
 		$guzzle->addSubscriber($mock);
@@ -85,11 +89,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 					'test',
 					"--$boundary",
 					'Content-Disposition: form-data; name="file"; filename="ClientTest.php"',
-					'Content-Type: application/octet-stream',
+					'Content-Type: text/x-php',
 					'',
 					$content,
 					"--$boundary",
-					'Content-Disposition: form-data; name="curlFile"; filename="file.php"',
+					'Content-Disposition: form-data; name="postFile"; filename="file.php"',
 					'Content-Type: application/php',
 					'',
 					$content,
