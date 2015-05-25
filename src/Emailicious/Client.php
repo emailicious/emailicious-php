@@ -6,6 +6,7 @@ use Guzzle\Http\Client as GuzzleClient;
 use Guzzle\Http\Exception\BadResponseException;
 use Guzzle\Http\Message\EntityEnclosingRequest;
 use Guzzle\Http\Message\Request;
+use Guzzle\Http\QueryString;
 use Emailicious\Http\QueryAggregator;
 
 class Client {
@@ -56,9 +57,63 @@ class Client {
 		return $response;
 	}
 
+	private function _createMulipartField($boundary, $key, $value) {
+		return implode("\r\n", array(
+			"--$boundary",
+			"Content-Disposition: form-data; name=\"$key\"",
+			'',
+			$value,
+		));
+	}
+
+	private function _createMulipartFile($boundary, $key, $file) {
+		if ($file instanceof \CURLFile) {
+			$filePath = $file->getFilename();
+			$fileName = $file->getPostFilename();
+			$contentType = $file->getMimeType();
+		} else {
+			$filePath = $file;
+			$fileName = basename($file);
+			$contentType = 'application/octet-stream';
+		}
+		$content = file_get_contents($filePath);
+		return implode("\r\n", array(
+			"--$boundary",
+			"Content-Disposition: form-data; name=\"$key\"; filename=\"$fileName\"",
+			"Content-Type: $contentType",
+			'',
+			$content,
+		));
+	}
+
+	private function _createMultipartBody($boundary, QueryString $fields, $files) {
+		$body = array();
+		foreach ($fields->useUrlEncoding(false)->urlEncode() as $key => $value) {
+			if (is_array($value)) {
+				foreach ($value as $v) {
+					$body[] = $this->_createMulipartField($boundary, $key, $v);
+				}
+			} else {
+				$body[] = $this->_createMulipartField($boundary, $key, $value);
+			}
+		}
+		foreach ($files as $key => $filename) {
+			$body[] = $this->_createMulipartFile($boundary, $key, $filename);
+		}
+		if (count($body)) $body[] = "--$boundary--\r\n";
+		return implode("\r\n", $body);
+	}
+
 	protected function _sendEntityEnclosingRequest(EntityEnclosingRequest $request, array $files = null, array $parameters = null) {
 		$request->getPostFields()->setAggregator($this->_aggregator);
-		if ($files) $request->addPostFiles($files);
+		if ($files) {
+			// The PHP cURL bindings can't deal with duplicate field names when CURL_POSTFIELDS is an array.
+			// In order to work around this limitation we have to build the body ourselves.
+			// See https://bugs.php.net/bug.php?id=51634.
+			$boundary = md5(time());
+			$body = $this->_createMultipartBody($boundary, $request->getPostFields(), $files);
+			$request->setBody($body, "multipart/form-data; boundary=$boundary");
+		}
 		return $this->_sendRequest($request, $parameters);
 	}
 
