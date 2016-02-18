@@ -48,14 +48,15 @@ Adding a subscriber to a list
     );
 
     try {
-        Subscriber.create($client, $listId, $data);
+        Subscriber::create($client, $listId, $data);
     } catch (SubscriberConflict $conflict) {
-        // Email is already registered
+        // Email is already registered, the conflicting subscriber can be retrieved.
+        $conflictualSubscriber = $conflict->getConflictualSubscriber();
     } catch (BadResponseException $exception) {
         $response = $exception->getResponse();
         if ($response->getStatusCode() == 400) {
             // Validation error, refer to the response body for more details.
             $details = $response->json();
         }
-        // Refer to the response status code for more details.
+        // Refer to the response status code and response body for more details.
     }
