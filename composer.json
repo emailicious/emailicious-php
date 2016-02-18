@@ -16,7 +16,7 @@
     "require-dev": {
         "mockery/mockery": "~0.9",
         "phpunit/phpunit": "~4.4",
-        "satooshi/php-coveralls": "dev-master"
+        "satooshi/php-coveralls": "~0.7-dev"
     },
     "autoload": {
         "psr-0": { "Emailicious": "src/" }
