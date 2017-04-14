@@ -40,7 +40,7 @@ Adding a subscriber to a list
     use Emailicious\Subscribers\Exceptions\SubscriberConflict;
     use Guzzle\Http\Exception\BadResponseException;
 
-    $client = Client($account, $user, $password);
+    $client = new Client($account, $user, $password);
     $data = array(
         'email' => 'email@example.com',
         'first_name' => 'Foo',
